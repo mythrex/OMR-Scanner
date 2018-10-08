@@ -35,7 +35,33 @@ edged = cv2.Canny(gray, 5, 10)
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-cv2.drawContours(image, cnts, -1, (255, 0, 0), 1)
-cv2.imshow('Edged', image)
+docCnts = None
+if len(cnts) > 0:
+    sorted(cnts, key=cv2.contourArea, reverse=True)
+    for c in cnts:
+        # calc the perimeter
+        peri = cv2.arcLength(cnts[0], True)
+        approx = cv2.approxPolyDP(cnts[0], 0.09*peri, True)
+        if len(c) == 4:
+            docCnts = approx
+            break
+
+# apply perspective transform to the shape
+paper = four_point_transform(image, docCnts.reshape(4, 2))
+warped = four_point_transform(gray, docCnts.reshape(4, 2))
+
+# binarisation of image
+# thresh[0] is th peak val
+# thresh[1] is array
+thresh = cv2.threshold(
+    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+
+# find contours in threshholded image
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+                        cv2.CHAIN_APPROX_SIMPLE)
+cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
+cv2.drawContours(paper, cnts, -1, (0, 0, 255), 1)
+cv2.imshow('Warped', paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
