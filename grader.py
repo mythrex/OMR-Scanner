@@ -14,8 +14,8 @@ ap.add_argument("-i", "--image", required=True,
 args = vars(ap.parse_args())
 
 # Answer Key
-ques = [i for i in range(50)]
-opts = [random.randrange(0, 4) for _ in range(50)]
+ques = [i for i in range(60)]
+opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
 
 # load the image
@@ -70,18 +70,50 @@ for c in cnts:
     ar = w / float(h)
     if w >= 10 and h >= 10 and ar >= 0.9 and ar <= 1.1:
         questionCnts.append(c)
-        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 # sort the question contours from top to bottom
 questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
 correct = 0
 
-# each question has 5 possible answers, to loop over the
-# question in batches of 5
-for (q, i) in enumerate(np.arange(0, len(questionCnts)), 5):
-    cnts = contours.sort_contours(questionCnts[i:i+5])[0]
-    cv2.drawContours(paper, cnts, -1, q, 5)
-# cv2.drawContours(paper, questionCnts, -1, (0, 255, 0), 1)
-cv2.imshow('Warped', paper)
+# each question has 4 possible answers, to loop over the
+# question in batches of 4
+for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
+    cnts = contours.sort_contours(questionCnts[i:i+4])[0]
+    bubbled = None
+    # loop for each bubbleANSWER_KEY[q]
+    for (j, c) in enumerate(cnts):
+        mask = np.zeros(thresh.shape, dtype='uint8')
+        # cv2.drawContours(mask, [c], -1, 255, -1)
+
+        # apply mask to thresh hold image
+        mask = cv2.bitwise_and(thresh, thresh, mask=mask)
+        total = cv2.countNonZero(mask)
+
+        # if non of white pixel are greater than pervious bubble
+        if bubbled is None or total > bubbled[0]:
+            bubbled = (total, j)
+
+    # initialize the contour color and the index of the
+        # *correct* answer
+    color = (0, 0, 255)
+    print('q:', q, 'i:', i, ANSWER_KEY[q], bubbled[1])
+    k = ANSWER_KEY[q]
+
+    # check to see if the bubbled answer is correct
+    if k == bubbled[1]:
+        color = (0, 255, 0)
+        correct += 1
+
+    # draw contour at k
+    cv2.drawContours(paper, [cnts[k]], -1, color, 2)
+
+# grab the test taker
+score = (correct / len(ANSWER_KEY)) * 100
+print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
+cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+cv2.imshow("Original", image)
+cv2.imshow("Exam", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
