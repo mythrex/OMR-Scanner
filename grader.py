@@ -61,7 +61,27 @@ cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
-cv2.drawContours(paper, cnts, -1, (0, 0, 255), 1)
+# find question contours
+questionCnts = []
+
+# loop over countours
+for c in cnts:
+    (x, y, w, h) = cv2.boundingRect(c)
+    ar = w / float(h)
+    if w >= 10 and h >= 10 and ar >= 0.9 and ar <= 1.1:
+        questionCnts.append(c)
+        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+
+# sort the question contours from top to bottom
+questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
+correct = 0
+
+# each question has 5 possible answers, to loop over the
+# question in batches of 5
+for (q, i) in enumerate(np.arange(0, len(questionCnts)), 5):
+    cnts = contours.sort_contours(questionCnts[i:i+5])[0]
+    cv2.drawContours(paper, cnts, -1, q, 5)
+# cv2.drawContours(paper, questionCnts, -1, (0, 255, 0), 1)
 cv2.imshow('Warped', paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
