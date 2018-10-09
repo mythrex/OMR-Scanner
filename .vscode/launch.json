@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["-i", "images/omr_template.jpg"]
+      "args": ["-i", "images/OMR SCAN.jpg"]
     },
     {
       "name": "Python: Current File (External Terminal)",
