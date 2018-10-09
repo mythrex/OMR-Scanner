@@ -80,6 +80,7 @@ correct = 0
 questionCnts = contours.sort_contours(
     questionCnts[0:240], method='top-to-bottom')[0]
 
+bubble_thresh = 105
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
@@ -94,22 +95,23 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
         # bubble area
         cv2.bitwise_and(thresh, thresh, mask=mask)
         total = cv2.countNonZero(mask)
-
         # if total > current bubbled then
         # bubbled = total
 
         if bubbled is None or bubbled[0] < total:
+            print(total)
             bubbled = (total, j)
 
     color = (0, 0, 255)
     k = ANSWER_KEY[q]
 
     # check if answer = marked
-    if k == bubbled[1]:
+    if k == bubbled[1] and bubbled[0] > bubble_thresh:
         color = (0, 255, 0)
         correct += 1
-    print('bubbled: ', bubbled[1], 'correct', k)
-    cv2.drawContours(paper, [cnts[k]], -1, color, 2)
+
+    if bubbled[0] > bubble_thresh:
+        cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
 score = (correct / 240) * 100
