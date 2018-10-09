@@ -17,11 +17,12 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
+print(ANSWER_KEY)
 no_of_options = 4
 # This is thresh hold value for bubbling.
 # no of pixels white in mask should be greater
 # than this value to be counted as a buuble
-bubble_thresh = 110
+bubble_thresh = 100
 
 
 # load the image
@@ -43,18 +44,19 @@ cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 docCnts = None
 if len(cnts) > 0:
-    sorted(cnts, key=cv2.contourArea, reverse=True)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
     for c in cnts:
         # calc the perimeter
-        peri = cv2.arcLength(cnts[0], True)
-        approx = cv2.approxPolyDP(cnts[0], 0.09*peri, True)
-        if len(c) == 4:
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.09*peri, True)
+        if len(approx) == 4:
             docCnts = approx
             break
 
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
+
 
 # binarisation of image
 # thresh[0] is th peak val
@@ -89,13 +91,13 @@ questionCnts = contours.sort_contours(
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
-    cnts = contours.sort_contours(questionCnts[i:i+no_of_options])[0]
+    cnts = contours.sort_contours(questionCnts[i:i+no_of_options])
+    cnts = cnts[0]
     bubbled = None
-    buuble_count = 0
+    bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
-
         # apply the mask to the thresholded image, then
         # count the number of non-zero pixels in the
         # bubble area
@@ -106,17 +108,23 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
 
         if bubbled is None or bubbled[0] < total:
             if total > bubble_thresh:
-                buuble_count += 1
+                bubble_count += 1
             bubbled = (total, j)
 
     color = (0, 0, 255)
-    k = ANSWER_KEY[q]
-
+    # given q is the new q
+    # calculate the old question no
+    # as per issue #2
+    col = q % 4
+    row = q // 4
+    new_ques_no = col*15 + row
+    print(q, new_ques_no)
+    k = ANSWER_KEY[new_ques_no]
     # check if answer = marked
     # and if bubbled is > bubble threshold. i.e:
     # bubble is not empty
     # also handling both bubble marked case
-    if k == bubbled[1] and bubbled[0] > bubble_thresh and buuble_count == 1:
+    if k == bubbled[1] and bubbled[0] > bubble_thresh and bubble_count == 1:
         color = (0, 255, 0)
         correct += 1
 
@@ -128,6 +136,7 @@ score = (correct / 240) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
 # # grab the test taker
 # score = (correct / len(ANSWER_KEY)) * 100
 # print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
