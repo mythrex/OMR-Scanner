@@ -17,6 +17,7 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
+no_of_options = 4
 
 # load the image
 orig = cv2.imread(args['image'])
@@ -76,44 +77,45 @@ for c in cnts:
 questionCnts = contours.sort_contours(questionCnts)[0]
 correct = 0
 # sort the first 4 countours left to right
-e = contours.sort_contours(questionCnts[0:240], method='top-to-bottom')[1]
-# this should draw 1 b countour
-print(sorted(e[0:4], key=lambda b: b[0]))
-# cv2.drawContours(paper, e[0:3], -1, 255, -1)
-
+questionCnts = contours.sort_contours(
+    questionCnts[0:240], method='top-to-bottom')[0]
 
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
-# for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
-#     cnts = contours.sort_contours(questionCnts[i:i+4])[0]
-#     bubbled = None
-#     # loop for each bubbleANSWER_KEY[q]
-#     for (j, c) in enumerate(cnts):
-#         mask = np.zeros(thresh.shape, dtype='uint8')
-#         # cv2.drawContours(mask, [c], -1, 255, -1)
+for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
+    cnts = contours.sort_contours(questionCnts[i:i+no_of_options])[0]
+    bubbled = None
+    for (j, c) in enumerate(cnts):
+        mask = np.zeros(thresh.shape, dtype='uint8')
+        cv2.drawContours(mask, [c], -1, 255, -1)
 
-#         # apply mask to thresh hold image
-#         mask = cv2.bitwise_and(thresh, thresh, mask=mask)
-#         total = cv2.countNonZero(mask)
+        # apply the mask to the thresholded image, then
+        # count the number of non-zero pixels in the
+        # bubble area
+        cv2.bitwise_and(thresh, thresh, mask=mask)
+        total = cv2.countNonZero(mask)
 
-#         # if non of white pixel are greater than pervious bubble
-#         if bubbled is None or total > bubbled[0]:
-#             bubbled = (total, j)
+        # if total > current bubbled then
+        # bubbled = total
 
-#     # initialize the contour color and the index of the
-#         # *correct* answer
-#     color = (0, 0, 255)
-#     print('q:', q, 'i:', i, ANSWER_KEY[q], bubbled[1])
-#     k = ANSWER_KEY[q]
+        if bubbled is None or bubbled[0] < total:
+            bubbled = (total, j)
 
-#     # check to see if the bubbled answer is correct
-#     if k == bubbled[1]:
-#         color = (0, 255, 0)
-#         correct += 1
+    color = (0, 0, 255)
+    k = ANSWER_KEY[q]
 
-#     # draw contour at k
-#     cv2.drawContours(paper, [cnts[k]], -1, color, 2)
+    # check if answer = marked
+    if k == bubbled[1]:
+        color = (0, 255, 0)
+        correct += 1
+    print('bubbled: ', bubbled[1], 'correct', k)
+    cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
+# grab the test taker
+score = (correct / 240) * 100
+print("[INFO] score: {:.2f}%".format(score))
+cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 # # grab the test taker
 # score = (correct / len(ANSWER_KEY)) * 100
 # print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
