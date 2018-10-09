@@ -18,6 +18,11 @@ ques = [i for i in range(60)]
 opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
 no_of_options = 4
+# This is thresh hold value for bubbling.
+# no of pixels white in mask should be greater
+# than this value to be counted as a buuble
+bubble_thresh = 110
+
 
 # load the image
 orig = cv2.imread(args['image'])
@@ -80,12 +85,13 @@ correct = 0
 questionCnts = contours.sort_contours(
     questionCnts[0:240], method='top-to-bottom')[0]
 
-bubble_thresh = 105
+
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
     cnts = contours.sort_contours(questionCnts[i:i+no_of_options])[0]
     bubbled = None
+    buuble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
@@ -99,14 +105,18 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
         # bubbled = total
 
         if bubbled is None or bubbled[0] < total:
-            print(total)
+            if total > bubble_thresh:
+                buuble_count += 1
             bubbled = (total, j)
 
     color = (0, 0, 255)
     k = ANSWER_KEY[q]
 
     # check if answer = marked
-    if k == bubbled[1] and bubbled[0] > bubble_thresh:
+    # and if bubbled is > bubble threshold. i.e:
+    # bubble is not empty
+    # also handling both bubble marked case
+    if k == bubbled[1] and bubbled[0] > bubble_thresh and buuble_count == 1:
         color = (0, 255, 0)
         correct += 1
 
