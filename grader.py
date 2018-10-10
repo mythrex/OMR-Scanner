@@ -17,7 +17,6 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
-print(ANSWER_KEY)
 no_of_options = 4
 # This is thresh hold value for bubbling.
 # no of pixels white in mask should be greater
@@ -57,17 +56,17 @@ if len(cnts) > 0:
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
 
-
 # binarisation of image
 # thresh[0] is th peak val
 # thresh[1] is array
-thresh = cv2.threshold(
-    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+thresh = cv2.adaptiveThreshold(
+    warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 # find contours in threshholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
 
 # find question contours
 questionCnts = []
@@ -76,10 +75,12 @@ questionCnts = []
 for c in cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
-    if w >= 10 and h >= 10 and ar >= 0.9 and ar <= 1.1:
+    if (w >= 10 and h >= 10) and (w <= 40 and h <= 40) and ar >= 0.7 and ar <= 1.3:
         questionCnts.append(c)
-        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
+
+cv2.drawContours(paper, questionCnts, -1, (0, 0, 255), 1)
 # sort the question contours from left to right
 questionCnts = contours.sort_contours(questionCnts)[0]
 correct = 0
@@ -87,7 +88,7 @@ correct = 0
 questionCnts = contours.sort_contours(
     questionCnts[0:240], method='top-to-bottom')[0]
 
-
+'''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), no_of_options)):
@@ -136,13 +137,14 @@ score = (correct / 240) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-
+'''
 # # grab the test taker
 # score = (correct / len(ANSWER_KEY)) * 100
 # print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
 # cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
 #             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-cv2.imshow("Original", image)
+# cv2.imshow("Original", image)
+cv2.imshow("Thresh", thresh)
 cv2.imshow("Exam", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
