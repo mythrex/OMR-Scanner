@@ -67,7 +67,9 @@ cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
+cv2.drawContours(paper, cnts, -1, (0, 0, 255), 1)
 
+'''
 # find question contours
 questionCnts = []
 
@@ -80,14 +82,13 @@ for c in cnts:
         cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 
-cv2.drawContours(paper, questionCnts, -1, (0, 0, 255), 1)
 # sort the question contours from left to right
 questionCnts = contours.sort_contours(questionCnts)[0]
 correct = 0
 # sort the first 4 countours left to right
 questionCnts = contours.sort_contours(
     questionCnts[0:240], method='top-to-bottom')[0]
-
+'''
 '''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
