@@ -17,6 +17,7 @@ args = vars(ap.parse_args())
 # ques = [i for i in range(60)]
 # opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = {0: 0, 1: 0, 2: 0, 3: 2, 4: 1}
+bubble_thresh = 100
 
 # load the image
 orig = cv2.imread(args['image'])
