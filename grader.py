@@ -28,10 +28,11 @@ image = imutils.resize(image, height=800)
 # gray it
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # blur it
-gray = cv2.GaussianBlur(gray, (5, 5), 0)
+# gray = cv2.GaussianBlur(gray, (5, 5), 0)
 # canny edge detection
-edged = cv2.Canny(gray, 5, 10)
+edged = cv2.Canny(gray, 20, 50)
 
+'''
 # Find the contours
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
@@ -123,5 +124,7 @@ cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
 
 cv2.imshow("Original", image)
 cv2.imshow("Exam", paper)
+'''
+cv2.imshow('Edged', edged)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

@@ -29,16 +29,20 @@ Before doing edge detection we do
 - Black and White
 - Blur
 
-### Why do we do this?
+#### Why do we do this?
 
 We do this because,
 
 - Black and white image has only 1 shade of color mainly black. This helps in easy computation of pixel values as we don't have to compute on different channels(**Mainly RGB**).
 
 Code for Black and white.
-`gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)`
+`cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)` returns black and white image.
 
 - Blurring the image will **reduce the noise**.
+
+`cv2.GaussianBlur(gray, (5, 5), 0)` returns blurred image.
+
+<img src="https://docs.opencv.org/3.0-beta/_images/median.jpg" alt="Blurring of image">
 
 #### Code for edge detection
 
@@ -50,3 +54,13 @@ gray = cv2.GaussianBlur(gray, (5, 5), 0)
 # canny edge detection
 edged = cv2.Canny(gray, 5, 10)
 ```
+
+##### Why to use gaussian blur?
+
+**With blur.**
+
+<img src="./tut_images/with_blur.png" alt="With Blur" height="300">
+
+**Without blur**
+
+<img src="./tut_images/without_blur.png" alt="Without Blur" height="300">
