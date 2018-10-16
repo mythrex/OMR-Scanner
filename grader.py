@@ -43,7 +43,6 @@ if len(cnts) > 0:
         # calc the perimeter
         peri = cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, 0.02*peri, True)
-        print(approx)
         if len(approx) == 4:
             docCnts = approx
             break
@@ -99,8 +98,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         # bubbled = total
         # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
-            if total > bubble_thresh:
-                bubble_count += 1
+            # if total > bubble_thresh:
+            #     bubble_count += 1
             bubbled = (total, j)
 
     color = (0, 0, 255)
