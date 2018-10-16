@@ -14,9 +14,9 @@ ap.add_argument("-i", "--image", required=True,
 args = vars(ap.parse_args())
 
 # Answer Key
-ques = [i for i in range(60)]
-opts = [random.randrange(0, 4) for _ in range(60)]
-ANSWER_KEY = dict(zip(ques, opts))
+# ques = [i for i in range(60)]
+# opts = [random.randrange(0, 4) for _ in range(60)]
+ANSWER_KEY = {0: 0, 1: 0, 2: 0, 3: 2, 4: 1}
 
 # load the image
 orig = cv2.imread(args['image'])
@@ -37,12 +37,12 @@ cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 docCnts = None
 if len(cnts) > 0:
-    sorted(cnts, key=cv2.contourArea, reverse=True)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
     for c in cnts:
         # calc the perimeter
-        peri = cv2.arcLength(cnts[0], True)
-        approx = cv2.approxPolyDP(cnts[0], 0.09*peri, True)
-        if len(c) == 4:
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.09*peri, True)
+        if len(approx) == 4:
             docCnts = approx
             break
 
@@ -68,18 +68,19 @@ questionCnts = []
 for c in cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
-    if w >= 10 and h >= 10 and ar >= 0.9 and ar <= 1.1:
+    if w >= 20 and h >= 20 and ar >= 0.9 and ar <= 1.1:
         questionCnts.append(c)
-        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 # sort the question contours from top to bottom
 questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
+cv2.drawContours(paper, questionCnts, -1, 255, 1)
 correct = 0
 
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
-for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
-    cnts = contours.sort_contours(questionCnts[i:i+4])[0]
+for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
+    cnts = contours.sort_contours(questionCnts[i:i+5])[0]
     bubbled = None
     # loop for each bubbleANSWER_KEY[q]
     for (j, c) in enumerate(cnts):
@@ -97,7 +98,6 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     # initialize the contour color and the index of the
         # *correct* answer
     color = (0, 0, 255)
-    print('q:', q, 'i:', i, ANSWER_KEY[q], bubbled[1])
     k = ANSWER_KEY[q]
 
     # check to see if the bubbled answer is correct
@@ -113,6 +113,7 @@ score = (correct / len(ANSWER_KEY)) * 100
 print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
 cv2.imshow("Original", image)
 cv2.imshow("Exam", paper)
 cv2.waitKey(0)
