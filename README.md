@@ -64,3 +64,76 @@ edged = cv2.Canny(gray, 5, 10)
 **Without blur**
 
 <img src="./tut_images/without_blur.png" alt="Without Blur" height="300">
+
+### Step#2 Perpective transform
+
+We will use edged image to find contours and filter out the largest contour.
+
+**Code for finding countours.**
+
+```py
+cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
+                        cv2.CHAIN_APPROX_SIMPLE)
+```
+
+We have used Return Method _RETR_EXTERNAL_. Learn more about openCV return method and heirarchy. [Click here!](https://docs.opencv.org/3.4.2/d9/d8b/tutorial_py_contours_hierarchy.html)
+
+We have used [CHAIN_APPROX_SIMPLE](https://docs.opencv.org/3.3.1/d4/d73/tutorial_py_contours_begin.html) for optimisation.
+
+```py
+cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
+                        cv2.CHAIN_APPROX_SIMPLE)
+
+cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+docCnts = None
+if len(cnts) > 0:
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+    for c in cnts:
+        # calc the perimeter
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.02*peri, True)
+        if len(approx) == 4:
+            docCnts = approx
+            break
+```
+
+**Finding the largest contour**
+
+<img src="./tut_images/largest_area.png" alt="largest area" height="300">
+
+```py
+# apply perspective transform to the shape
+paper = four_point_transform(image, docCnts.reshape(4, 2))
+```
+
+**After applying perspective transform.**
+
+<img src="./tut_images/paper.png" alt="after perpective transform" height="300">
+
+### Step#3 Thresholding
+
+We will be using **Otsu's thresholding method**. To learn more about threshholding [read here!](https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html)
+
+One thing to know about **Otsu's method is that it works on bimodal images.** But sometimes when **uneven lighting condition** is the case Otsu's method **fails**.
+
+When we plot histogram for paper image we get the following histogram.
+
+<img src="./tut_images/paper.png" alt="Paper" height="300">
+
+<img src="./tut_images/hist_paper.png" alt="Histogram Paper" height="400">
+
+**Otsu method** has chosen **175 or rgb(175, 175. 175) or #afafaf** as threshold.
+<img src="https://via.placeholder.com/30/afafaf" alt="Threshold Value">
+
+**X-axis**: is color shade.
+**Y-axis**: no of pixel for that color.
+
+#### After thresholding
+
+<img src="./tut_images/thresh.png" alt="Threshold image" height="300">
+
+Histogram is
+
+<img src="./tut_images/hist_thresh.png" alt="Histogram Thresholded image" height="400">
+
+You can see that there is either **0(white)** or **255(black)** pixels in **Thresholded image**.

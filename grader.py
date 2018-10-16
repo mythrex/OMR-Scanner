@@ -28,14 +28,15 @@ image = imutils.resize(image, height=800)
 # gray it
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # blur it
-# gray = cv2.GaussianBlur(gray, (5, 5), 0)
+gray = cv2.GaussianBlur(gray, (5, 5), 0)
 # canny edge detection
 edged = cv2.Canny(gray, 20, 50)
 
-'''
+
 # Find the contours
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
+
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 docCnts = None
 if len(cnts) > 0:
@@ -48,11 +49,9 @@ if len(cnts) > 0:
             docCnts = approx
             break
 
-
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
-
 # binarisation of image
 # thresh[0] is th peak val
 # thresh[1] is array
@@ -124,7 +123,5 @@ cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
 
 cv2.imshow("Original", image)
 cv2.imshow("Exam", paper)
-'''
-cv2.imshow('Edged', edged)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
