@@ -53,13 +53,15 @@ warped = four_point_transform(gray, docCnts.reshape(4, 2))
 # binarisation of image
 # thresh[0] is th peak val
 # thresh[1] is array
-thresh = cv2.threshold(
-    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+thresh = cv2.adaptiveThreshold(
+    warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 # find contours in threshholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
+cv2.drawContours(paper, cnts, -1, (0, 0, 255), 1)
 
 # find question contours
 questionCnts = []
@@ -77,26 +79,36 @@ questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
 cv2.drawContours(paper, questionCnts, -1, 255, 1)
 correct = 0
 
+# sort the question contours from left to right
+questionCnts = contours.sort_contours(questionCnts)[0]
+correct = 0
+# sort the first 4 countours left to right
+questionCnts = contours.sort_contours(
+    questionCnts[0:240], method='top-to-bottom')[0]
+'''
+'''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
     cnts = contours.sort_contours(questionCnts[i:i+5])[0]
     bubbled = None
-    # loop for each bubbleANSWER_KEY[q]
+    bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
-        # cv2.drawContours(mask, [c], -1, 255, -1)
-
-        # apply mask to thresh hold image
-        mask = cv2.bitwise_and(thresh, thresh, mask=mask)
+        cv2.drawContours(mask, [c], -1, 255, -1)
+        # apply the mask to the thresholded image, then
+        # count the number of non-zero pixels in the
+        # bubble area
+        cv2.bitwise_and(thresh, thresh, mask=mask)
         total = cv2.countNonZero(mask)
+        # if total > current bubbled then
+        # bubbled = total
 
-        # if non of white pixel are greater than pervious bubble
-        if bubbled is None or total > bubbled[0]:
+        if bubbled is None or bubbled[0] < total:
+            if total > bubble_thresh:
+                bubble_count += 1
             bubbled = (total, j)
 
-    # initialize the contour color and the index of the
-        # *correct* answer
     color = (0, 0, 255)
     k = ANSWER_KEY[q]
 
@@ -105,12 +117,12 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         color = (0, 255, 0)
         correct += 1
 
-    # draw contour at k
-    cv2.drawContours(paper, [cnts[k]], -1, color, 2)
+    if bubbled[0] > bubble_thresh:
+        cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
-score = (correct / len(ANSWER_KEY)) * 100
-print("[INFO] score: {:.2f}%".format(score), correct, len(ANSWER_KEY))
+score = (correct / 240) * 100
+print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
