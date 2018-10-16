@@ -17,7 +17,7 @@ args = vars(ap.parse_args())
 # ques = [i for i in range(60)]
 # opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = {0: 0, 1: 0, 2: 0, 3: 2, 4: 1}
-bubble_thresh = 100
+bubble_thresh = 0
 
 # load the image
 orig = cv2.imread(args['image'])
@@ -42,10 +42,12 @@ if len(cnts) > 0:
     for c in cnts:
         # calc the perimeter
         peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.09*peri, True)
+        approx = cv2.approxPolyDP(c, 0.02*peri, True)
+        print(approx)
         if len(approx) == 4:
             docCnts = approx
             break
+
 
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
@@ -54,15 +56,13 @@ warped = four_point_transform(gray, docCnts.reshape(4, 2))
 # binarisation of image
 # thresh[0] is th peak val
 # thresh[1] is array
-thresh = cv2.adaptiveThreshold(
-    warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+thresh = cv2.threshold(
+    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
 # find contours in threshholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-
-cv2.drawContours(paper, cnts, -1, (0, 0, 255), 1)
 
 # find question contours
 questionCnts = []
@@ -73,21 +73,12 @@ for c in cnts:
     ar = w / float(h)
     if w >= 20 and h >= 20 and ar >= 0.9 and ar <= 1.1:
         questionCnts.append(c)
-        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 # sort the question contours from top to bottom
 questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
-cv2.drawContours(paper, questionCnts, -1, 255, 1)
+# cv2.drawContours(paper, questionCnts, -1, 255, 1)
 correct = 0
-
-# sort the question contours from left to right
-questionCnts = contours.sort_contours(questionCnts)[0]
-correct = 0
-# sort the first 4 countours left to right
-questionCnts = contours.sort_contours(
-    questionCnts[0:240], method='top-to-bottom')[0]
-'''
-'''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
@@ -100,11 +91,13 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         # apply the mask to the thresholded image, then
         # count the number of non-zero pixels in the
         # bubble area
-        cv2.bitwise_and(thresh, thresh, mask=mask)
+        mask = cv2.bitwise_and(thresh, thresh, mask=mask)
+        # cv2.imshow('Mask', mask)
+        # cv2.waitKey(100)
         total = cv2.countNonZero(mask)
         # if total > current bubbled then
         # bubbled = total
-
+        # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
             if total > bubble_thresh:
                 bubble_count += 1
@@ -114,6 +107,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
     k = ANSWER_KEY[q]
 
     # check to see if the bubbled answer is correct
+    # print(bubbled)
+    # print('bubbled[1]', bubbled[1], 'k:', k)
     if k == bubbled[1]:
         color = (0, 255, 0)
         correct += 1
