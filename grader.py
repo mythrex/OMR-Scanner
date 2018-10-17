@@ -91,8 +91,6 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         # count the number of non-zero pixels in the
         # bubble area
         mask = cv2.bitwise_and(thresh, thresh, mask=mask)
-        # cv2.imshow('Mask', mask)
-        # cv2.waitKey(100)
         total = cv2.countNonZero(mask)
         # if total > current bubbled then
         # bubbled = total
