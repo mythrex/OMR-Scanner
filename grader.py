@@ -64,8 +64,16 @@ thresh = cv2.adaptiveThreshold(
 # find contours in threshholded image
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
                         cv2.CHAIN_APPROX_SIMPLE)
+
+# filter out contours with parents
+heirarchy = cnts[2][0]
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-cv2.drawContours(paper, cnts, -1, 255, 1)
+filter_cnts = []
+for h in range(len(heirarchy)):
+    # if the contour has parent 1 keep it
+    if heirarchy[h][3] == 1:
+        filter_cnts.append(cnts[h])
+
 '''
 # find question contours
 questionCnts = []
