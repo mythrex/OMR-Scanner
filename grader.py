@@ -6,6 +6,7 @@ import argparse
 import imutils
 import cv2
 import random
+from matplotlib import pyplot as plt
 
 # construct the argument parser
 ap = argparse.ArgumentParser()
@@ -56,8 +57,14 @@ warped = four_point_transform(gray, docCnts.reshape(4, 2))
 # binarisation of image
 # instead of otsu thresholding
 # we have used adaptive thresholding
-thresh = cv2.adaptiveThreshold(
-    warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+thresh = cv2.threshold(
+    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+print(thresh[0])
+plt.hist(warped.ravel(), 256, [0, 256])
+plt.show()
+thresh = thresh[1]
+# thresh = cv2.adaptiveThreshold(
+#     warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 '''
 # find contours in threshholded image
@@ -122,6 +129,6 @@ cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 '''
 cv2.imshow("Thresh", thresh)
-cv2.imshow("Original", image)
+cv2.imshow("Warped", warped)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
