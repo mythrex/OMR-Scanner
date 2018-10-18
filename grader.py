@@ -74,21 +74,27 @@ for h in range(len(heirarchy)):
     if heirarchy[h][3] == 1:
         filter_cnts.append(cnts[h])
 
-'''
+
 # find question contours
-questionCnts = []
+questions = []
 
 # loop over countours
-for c in cnts:
+for c in filter_cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
-    if w >= 20 and h >= 20 and ar >= 0.9 and ar <= 1.1:
-        questionCnts.append(c)
+    if w >= 10 and h >= 10 and ar >= 0.7 and ar <= 1.3:
+        box = [int(round(x/5.0)*5), int(round(y/5.0)*5)]
+        questions.append([c, box])
         # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
+
 # sort the question contours from top to bottom
-questionCnts = contours.sort_contours(questionCnts, method='top-to-bottom')[0]
-# cv2.drawContours(paper, questionCnts, -1, 255, 1)
+questions = sorted(questions, key=lambda q: q[1][0])
+questions = sorted(questions, key=lambda q: q[1][1])
+questionCnts = [q[0] for q in questions]
+
+cv2.drawContours(paper, questionCnts, 9, 255, 2)
+'''
 correct = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
