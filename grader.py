@@ -38,6 +38,7 @@ cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
 docCnts = None
 if len(cnts) > 0:
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
@@ -53,11 +54,12 @@ if len(cnts) > 0:
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
 # binarisation of image
-# thresh[0] is th peak val
-# thresh[1] is array
-thresh = cv2.threshold(
-    warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+# instead of otsu thresholding
+# we have used adaptive thresholding
+thresh = cv2.adaptiveThreshold(
+    warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
+'''
 # find contours in threshholded image
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
@@ -118,8 +120,8 @@ score = (correct / 240) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-
+'''
+cv2.imshow("Thresh", thresh)
 cv2.imshow("Original", image)
-cv2.imshow("Exam", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
