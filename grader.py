@@ -104,7 +104,7 @@ mini = float('inf')
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     cnts = questionCnts[i:i+4]
     bubbled = None
-    # bubble_count = 0
+    bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
@@ -117,8 +117,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # bubbled = total
         # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
-            # if total > bubble_thresh:
-            #     bubble_count += 1
+            if total > bubble_thresh:
+                bubble_count += 1
             bubbled = (total, j)
     # change the q to old q
     # as q0 -> 0
@@ -130,14 +130,14 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
     # check to see if the bubbled answer is correct
-    if k == bubbled[1] and bubbled[0] > bubble_thresh:
+    if k == bubbled[1] and bubble_count == 1:
         color = (0, 255, 0)
         score += positive_marking
     # wrongly attempted
-    elif k != bubbled[1] and bubbled[0] > bubble_thresh:
+    elif k != bubbled[1] and bubble_count == 1:
         score += negative_marking
 
-    if bubbled[0] > bubble_thresh:
+    if bubbled[0] > bubble_thresh and bubble_count == 1:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
