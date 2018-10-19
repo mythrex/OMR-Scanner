@@ -6,6 +6,7 @@ import argparse
 import imutils
 import cv2
 import random
+from math import ceil
 from matplotlib import pyplot as plt
 
 # construct the argument parser
@@ -83,17 +84,19 @@ for c in filter_cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
     if w >= 10 and h >= 10 and ar >= 0.7 and ar <= 1.3:
-        box = [int(round(x/5.0)*5), int(round(y/5.0)*5)]
+        box = [(x//5)*5, y//30]
         questions.append([c, box])
         # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 
 # sort the question contours from top to bottom
 questions = sorted(questions, key=lambda q: q[1][0])
+# sort the question contours from left to right
 questions = sorted(questions, key=lambda q: q[1][1])
 questionCnts = [q[0] for q in questions]
-
-cv2.drawContours(paper, questionCnts, 9, 255, 2)
+boxes = [q[1] for q in questions]
+print(boxes)
+cv2.drawContours(paper, questionCnts, 15, 255, 2)
 '''
 correct = 0
 # each question has 4 possible answers, to loop over the
