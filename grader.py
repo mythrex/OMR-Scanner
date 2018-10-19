@@ -16,9 +16,9 @@ ap.add_argument("-i", "--image", required=True,
 args = vars(ap.parse_args())
 
 # Answer Key
-# ques = [i for i in range(60)]
-# opts = [random.randrange(0, 4) for _ in range(60)]
-ANSWER_KEY = {0: 0, 1: 0, 2: 0, 3: 2, 4: 1}
+ques = [i for i in range(60)]
+opts = [random.randrange(0, 4) for _ in range(60)]
+ANSWER_KEY = dict(zip(ques, opts))
 bubble_thresh = 0
 
 # load the image
@@ -89,22 +89,21 @@ for c in filter_cnts:
         # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 
-# sort the question contours from top to bottom
-questions = sorted(questions, key=lambda q: q[1][0])
 # sort the question contours from left to right
+questions = sorted(questions, key=lambda q: q[1][0])
+# sort the question contours from top to bottom
 questions = sorted(questions, key=lambda q: q[1][1])
 questionCnts = [q[0] for q in questions]
-boxes = [q[1] for q in questions]
-print(boxes)
-cv2.drawContours(paper, questionCnts, 15, 255, 2)
-'''
+# cv2.drawContours(paper, questionCnts, 15, 255, 2)
 correct = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
-for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
-    cnts = contours.sort_contours(questionCnts[i:i+5])[0]
+
+mini = float('inf')
+for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
+    cnts = questionCnts[i:i+4]
     bubbled = None
-    bubble_count = 0
+    # bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
@@ -117,13 +116,19 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         # bubbled = total
         # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
-            # if total > bubble_thresh:
+            # if total >print(ANSWER_KEY) bubble_thresh:
             #     bubble_count += 1
             bubbled = (total, j)
-
+    print(bubbled)
+    # change the q to old q
+    # as q0 -> 0
+    # as q1 -> 15
+    # as q2 -> 30 and so on
+    row = q // 4
+    col = q % 4
+    old_question_no = col*15 + row
     color = (0, 0, 255)
-    k = ANSWER_KEY[q]
-
+    k = ANSWER_KEY[old_question_no]
     # check to see if the bubbled answer is correct
     # print(bubbled)
     # print('bubbled[1]', bubbled[1], 'k:', k)
@@ -139,7 +144,7 @@ score = (correct / 240) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-'''
+
 cv2.imshow("Edged", edged)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
