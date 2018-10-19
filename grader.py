@@ -19,8 +19,9 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [random.randrange(0, 4) for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
-bubble_thresh = 0
-
+bubble_thresh = 90
+positive_marking = 1
+negative_marking = 0
 # load the image
 orig = cv2.imread(args['image'])
 image = orig.copy()
@@ -95,7 +96,7 @@ questions = sorted(questions, key=lambda q: q[1][0])
 questions = sorted(questions, key=lambda q: q[1][1])
 questionCnts = [q[0] for q in questions]
 # cv2.drawContours(paper, questionCnts, 15, 255, 2)
-correct = 0
+score = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 
@@ -116,10 +117,9 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # bubbled = total
         # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
-            # if total >print(ANSWER_KEY) bubble_thresh:
+            # if total > bubble_thresh:
             #     bubble_count += 1
             bubbled = (total, j)
-    print(bubbled)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
@@ -130,22 +130,23 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
     # check to see if the bubbled answer is correct
-    # print(bubbled)
-    # print('bubbled[1]', bubbled[1], 'k:', k)
-    if k == bubbled[1]:
+    if k == bubbled[1] and bubbled[0] > bubble_thresh:
         color = (0, 255, 0)
-        correct += 1
+        score += positive_marking
+    # wrongly attempted
+    elif k != bubbled[1] and bubbled[0] > bubble_thresh:
+        score += negative_marking
 
     if bubbled[0] > bubble_thresh:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
-score = (correct / 240) * 100
+# score = (score / 240) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
-cv2.imshow("Edged", edged)
+cv2.imshow("Original", paper)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
