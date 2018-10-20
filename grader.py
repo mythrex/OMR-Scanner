@@ -17,9 +17,9 @@ args = vars(ap.parse_args())
 
 # Answer Key
 ques = [i for i in range(60)]
-opts = [random.randrange(0, 4) for _ in range(60)]
+opts = [1 for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
-bubble_thresh = 90
+bubble_thresh = 0
 positive_marking = 1
 negative_marking = 0
 # load the image
@@ -102,9 +102,7 @@ for i in np.arange(0, len(questions), 16):
         # append each contour sorted from left to right in a row
         questionCnts.append(o[0])
 
-# cv2.drawContours(paper, questionCnts, 32, 255, 2)
 score = 0
-'''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
@@ -123,9 +121,10 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # bubbled = total
         # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
-            if total > bubble_thresh:
-                bubble_count += 1
+            # if total > bubble_thresh:
+            #     bubble_count += 1
             bubbled = (total, j)
+        # print(q, bubbled, bubble_count)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
@@ -136,14 +135,14 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
     # check to see if the bubbled answer is correct
-    if k == bubbled[1] and bubble_count == 1:
+    if k == bubbled[1]:
         color = (0, 255, 0)
         score += positive_marking
     # wrongly attempted and negative marking
-    elif k != bubbled[1] and bubble_count == 1:
+    elif k != bubbled[1]:
         score += negative_marking
 
-    if bubbled[0] > bubble_thresh and bubble_count == 1:
+    if bubbled[0] > bubble_thresh:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
@@ -151,7 +150,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-'''
+
 cv2.imshow("Original", image)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
