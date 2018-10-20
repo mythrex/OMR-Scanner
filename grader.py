@@ -84,23 +84,29 @@ questions = []
 for c in filter_cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
-    if w >= 10 and h >= 10 and ar >= 0.7 and ar <= 1.3:
-        box = [(x//5)*5, y//30]
+    if w >= 9 and h >= 9 and ar >= 0.7 and ar <= 1.2:
+        box = [(x//5)*5, round(y/3)/10.0]
         questions.append([c, box])
+        # print(x, y)
         # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
-
-# sort the question contours from left to right
-questions = sorted(questions, key=lambda q: q[1][0])
 # sort the question contours from top to bottom
 questions = sorted(questions, key=lambda q: q[1][1])
-questionCnts = [q[0] for q in questions]
-# cv2.drawContours(paper, questionCnts, 15, 255, 2)
+questionCnts = []
+for i in np.arange(0, len(questions), 16):
+    # take a row of bubbles
+    q = questions[i: i+16]
+    # sort them using x
+    q = sorted(q, key=lambda k: k[1][0])
+    for o in q:
+        # append each contour sorted from left to right in a row
+        questionCnts.append(o[0])
+
+# cv2.drawContours(paper, questionCnts, 32, 255, 2)
 score = 0
+'''
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
-
-mini = float('inf')
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     cnts = questionCnts[i:i+4]
     bubbled = None
@@ -145,8 +151,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-
-cv2.imshow("Original", paper)
+'''
+cv2.imshow("Original", image)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
