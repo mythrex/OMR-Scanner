@@ -19,7 +19,7 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [1 for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
-bubble_thresh = 0
+bubble_thresh = 180
 positive_marking = 1
 negative_marking = 0
 # load the image
@@ -82,7 +82,7 @@ for c in cnts:
         box = [(x//5)*5, y]
         questions.append([c, box])
         # print(x, y)
-        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 # sort the question contours from top to bottom
 questions = sorted(questions, key=lambda q: q[1][1])
@@ -134,7 +134,6 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     old_question_no = col*15 + row
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
-    print(old_question_no, bubbled[0])
     # check to see if the bubbled answer is correct
     if k == bubbled[1]:
         color = (0, 255, 0)
