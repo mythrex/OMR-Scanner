@@ -25,16 +25,14 @@ negative_marking = 0
 # load the image
 orig = cv2.imread(args['image'])
 image = orig.copy()
-ratio = image.shape[0] / 800.0
-image = imutils.resize(image, height=800)
-
+# ratio = image.shape[0] / 800.0
+image = imutils.resize(image, height=1500)
 # gray it
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # blur it
 gray = cv2.GaussianBlur(gray, (5, 5), 0)
 # canny edge detection
 edged = cv2.Canny(gray, 20, 50)
-
 
 # Find the contours
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
@@ -53,6 +51,7 @@ if len(cnts) > 0:
             docCnts = approx
             break
 
+
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
@@ -64,38 +63,41 @@ thresh = cv2.adaptiveThreshold(
     warped, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 # find contours in threshholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_TREE,
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 
 # filter out contours with parents
 heirarchy = cnts[2][0]
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-filter_cnts = []
-for h in range(len(heirarchy)):
-    # if the contour has parent 1 keep it
-    if heirarchy[h][3] == 1:
-        filter_cnts.append(cnts[h])
 
 
 # find question contours
 questions = []
 
 # loop over countours
-for c in filter_cnts:
+for c in cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
-    if w >= 9 and h >= 9 and ar >= 0.7 and ar <= 1.2:
-        box = [(x//5)*5, round(y/3)/10.0]
+    if (w >= 15 and h >= 15) and (w <= 50 and h <= 50) and ar >= 0.7 and ar <= 1.3:
+        box = [(x//5)*5, y]
         questions.append([c, box])
         # print(x, y)
-        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
 # sort the question contours from top to bottom
 questions = sorted(questions, key=lambda q: q[1][1])
 questionCnts = []
+'''
+We are now sorting from left to right by taking a batch of 16 contours
+that are basically a whole row and then sorting them from increasing order of x
+'''
+boxes = []
 for i in np.arange(0, len(questions), 16):
     # take a row of bubbles
-    q = questions[i: i+16]
+    q = list(questions[i: i+16])
+    for o in q:
+        boxes.append(o[1])
+    # append each contour sorted from left to right in a row
     # sort them using x
     q = sorted(q, key=lambda k: k[1][0])
     for o in q:
@@ -119,12 +121,10 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         total = cv2.countNonZero(mask)
         # if total > current bubbled then
         # bubbled = total
-        # print('total', total, 'bubbled', bubbled)
         if bubbled is None or bubbled[0] < total:
             # if total > bubble_thresh:
             #     bubble_count += 1
             bubbled = (total, j)
-        # print(q, bubbled, bubble_count)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
@@ -134,6 +134,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     old_question_no = col*15 + row
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
+    print(old_question_no, bubbled[0])
     # check to see if the bubbled answer is correct
     if k == bubbled[1]:
         color = (0, 255, 0)
@@ -151,7 +152,7 @@ print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
-cv2.imshow("Original", image)
+cv2.imshow("Thresh", thresh)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
