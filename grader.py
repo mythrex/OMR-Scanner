@@ -70,7 +70,6 @@ cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
 heirarchy = cnts[2][0]
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
-
 # find question contours
 questions = []
 
@@ -108,9 +107,13 @@ score = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
+    # calculate the old question no
+    row = q // 4
+    col = q % 4
+    old_question_no = col*15 + row
+
     cnts = questionCnts[i:i+4]
     bubbled = None
-    bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
@@ -119,31 +122,33 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # bubble area
         mask = cv2.bitwise_and(thresh, thresh, mask=mask)
         total = cv2.countNonZero(mask)
+
         # if total > current bubbled then
         # bubbled = total
         if bubbled is None or bubbled[0] < total:
-            if total > bubble_thresh:
-                bubble_count += 1
             bubbled = (total, j)
+        else:
+            # update bubble thresh
+            # if total <= bubbled[0]
+            # this means that bubbled is not filled
+            # therefore we are updating bubble thresh to adjust to the pic
+            bubble_thresh = max(bubble_thresh, total+5)
+    print(old_question_no, bubble_thresh)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
     # as q2 -> 30 and so on
-    row = q // 4
-    col = q % 4
-    old_question_no = col*15 + row
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
-    # print(old_question_no, bubbled, bubble_count)
     # check to see if the bubbled answer is correct
-    if k == bubbled[1] and bubble_count == 1:
+    if k == bubbled[1]:
         color = (0, 255, 0)
         score += positive_marking
     # wrongly attempted and negative marking
-    elif k != bubbled[1] and bubble_count == 1:
+    elif k != bubbled[1]:
         score += negative_marking
 
-    if bubbled[0] > bubble_thresh and bubble_count == 1:
+    if bubbled[0] > bubble_thresh:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
