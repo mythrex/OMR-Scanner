@@ -122,8 +122,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # if total > current bubbled then
         # bubbled = total
         if bubbled is None or bubbled[0] < total:
-            # if total > bubble_thresh:
-            #     bubble_count += 1
+            if total > bubble_thresh:
+                bubble_count += 1
             bubbled = (total, j)
     # change the q to old q
     # as q0 -> 0
@@ -134,15 +134,16 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     old_question_no = col*15 + row
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
+    # print(old_question_no, bubbled, bubble_count)
     # check to see if the bubbled answer is correct
-    if k == bubbled[1]:
+    if k == bubbled[1] and bubble_count == 1:
         color = (0, 255, 0)
         score += positive_marking
     # wrongly attempted and negative marking
-    elif k != bubbled[1]:
+    elif k != bubbled[1] and bubble_count == 1:
         score += negative_marking
 
-    if bubbled[0] > bubble_thresh:
+    if bubbled[0] > bubble_thresh and bubble_count == 1:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
