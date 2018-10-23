@@ -19,9 +19,10 @@ args = vars(ap.parse_args())
 ques = [i for i in range(60)]
 opts = [1 for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
-bubble_thresh = 180
+
 positive_marking = 1
 negative_marking = 0
+bubble_thresh = 180
 # load the image
 orig = cv2.imread(args['image'])
 image = orig.copy()
@@ -103,7 +104,8 @@ for i in np.arange(0, len(questions), 16):
         # append each contour sorted from left to right in a row
         questionCnts.append(o[0])
 
-score = 0
+correct = 0
+wrong = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
@@ -114,6 +116,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 
     cnts = questionCnts[i:i+4]
     bubbled = None
+    bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
         cv2.drawContours(mask, [c], -1, 255, -1)
@@ -127,13 +130,14 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         # bubbled = total
         if bubbled is None or bubbled[0] < total:
             bubbled = (total, j)
+            if bubbled[0] > bubble_thresh:
+                bubble_count += 1
         else:
             # update bubble thresh
             # if total <= bubbled[0]
             # this means that bubbled is not filled
             # therefore we are updating bubble thresh to adjust to the pic
-            bubble_thresh = max(bubble_thresh, total+5)
-    print(old_question_no, bubble_thresh)
+            bubble_thresh = max(bubble_thresh, total+1)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
@@ -141,23 +145,27 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     color = (0, 0, 255)
     k = ANSWER_KEY[old_question_no]
     # check to see if the bubbled answer is correct
-    if k == bubbled[1]:
+    if k == bubbled[1] and bubbled[0] > bubble_thresh:
         color = (0, 255, 0)
-        score += positive_marking
+        correct += 1
     # wrongly attempted and negative marking
-    elif k != bubbled[1]:
-        score += negative_marking
+    elif k != bubbled[1] and bubbled[0] > bubble_thresh:
+        wrong += 1
 
     if bubbled[0] > bubble_thresh:
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
-# score = (score / 240) * 100
+score = (correct*positive_marking + wrong*negative_marking) / 240 * 100
 print("[INFO] score: {:.2f}%".format(score))
-cv2.putText(paper, "{:.2f}%".format(score), (10, 30),
+cv2.putText(paper, "Correct: {}".format(correct), (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+cv2.putText(paper, "Wrong: {}".format(wrong), (10, 60),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+cv2.putText(paper, "Score: {:.1f}%".format(score), (10, 90),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-cv2.imshow("Thresh", thresh)
+
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
