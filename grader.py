@@ -53,7 +53,6 @@ if len(cnts) > 0:
             docCnts = approx
             break
 
-
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
 warped = four_point_transform(gray, docCnts.reshape(4, 2))
