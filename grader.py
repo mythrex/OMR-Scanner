@@ -6,8 +6,8 @@ import argparse
 import imutils
 import cv2
 import random
-from math import ceil
-from matplotlib import pyplot as plt
+import grader_util.grader_util as gu
+# from matplotlib import pyplot as plt
 
 # construct the argument parser
 ap = argparse.ArgumentParser()
@@ -69,51 +69,23 @@ cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 
 # filter out contours with parents
-heirarchy = cnts[2][0]
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
 # find question contours
-questions = []
+questions = gu.find_questions(cnts, paper)
 
-# loop over countours
-for c in cnts:
-    (x, y, w, h) = cv2.boundingRect(c)
-    ar = w / float(h)
-    if (w >= 15 and h >= 15) and (w <= 50 and h <= 50) and ar >= 0.7 and ar <= 1.3:
-        box = [(x//5)*5, y]
-        questions.append([c, box])
-        # print(x, y)
-        # cv2.rectangle(paper, (x, y), (x+w, y+h), (0, 255, 0), 1)
-
-# sort the question contours from top to bottom
-questions = sorted(questions, key=lambda q: q[1][1])
-questionCnts = []
 '''
 We are now sorting from left to right by taking a batch of 16 contours
 that are basically a whole row and then sorting them from increasing order of x
 '''
-boxes = []
-for i in np.arange(0, len(questions), 16):
-    # take a row of bubbles
-    q = list(questions[i: i+16])
-    for o in q:
-        boxes.append(o[1])
-    # append each contour sorted from left to right in a row
-    # sort them using x
-    q = sorted(q, key=lambda k: k[1][0])
-    for o in q:
-        # append each contour sorted from left to right in a row
-        questionCnts.append(o[0])
-
+questionCnts = gu.find_ques_cnts(questions)
 correct = 0
 wrong = 0
 # each question has 4 possible answers, to loop over the
 # question in batches of 4
 for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     # calculate the old question no
-    row = q // 4
-    col = q % 4
-    old_question_no = col*15 + row
+    old_question_no = gu.convert_ques_no(q, 15, 4)
 
     cnts = questionCnts[i:i+4]
     bubbled = None
