@@ -20,6 +20,7 @@ ques = [i for i in range(60)]
 opts = [1 for _ in range(60)]
 ANSWER_KEY = dict(zip(ques, opts))
 
+max_marks = 30
 positive_marking = 1
 negative_marking = 0
 bubble_thresh = 180
@@ -156,7 +157,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
         cv2.drawContours(paper, [cnts[k]], -1, color, 2)
 
 # grab the test taker
-score = (correct*positive_marking + wrong*negative_marking) / 240 * 100
+score = (correct*positive_marking + wrong*negative_marking) / max_marks * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "Correct: {}".format(correct), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
