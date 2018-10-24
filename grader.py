@@ -129,6 +129,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 
 # grab the test taker
 score = (correct*positive_marking + wrong*negative_marking) / max_marks * 100
+print("[INFO] correct: {}".format(correct))
+print("[INFO] wrong: {}".format(wrong))
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "Correct: {}".format(correct), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
