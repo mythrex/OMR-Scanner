@@ -23,7 +23,7 @@ ANSWER_KEY = dict(zip(ques, opts))
 max_marks = 30
 positive_marking = 1
 negative_marking = 0
-bubble_thresh = 180
+bubble_thresh = 185
 # load the image
 orig = cv2.imread(args['image'])
 image = orig.copy()
@@ -109,7 +109,8 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
             # if total <= bubbled[0]
             # this means that bubbled is not filled
             # therefore we are updating bubble thresh to adjust to the pic
-            bubble_thresh = max(bubble_thresh, total+1)
+            bubble_thresh = max(bubble_thresh, total+5)
+        print(old_question_no, bubble_thresh, total)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
