@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-
+from .grader_errors import BubbleDetectionError
+import sys
 # loop over countours
 # this function find the question bubbles
 # outputs matrix([contour, box])
@@ -16,6 +17,11 @@ def find_questions(cnts, image, show_boxes=False):
             questions.append([c, box])
             if show_boxes == True:
                 cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 1)
+    try:
+        if len(questions) != 240:
+            raise BubbleDetectionError('Bubbles not detected Properly.')
+    except BubbleDetectionError as e:
+        sys.exit(e.message)
     return questions
 
 
