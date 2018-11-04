@@ -6,7 +6,10 @@ import argparse
 import imutils
 import cv2
 import random
+import sys
+# user defined modules
 import grader_util.grader_util as gu
+import grader_util.grader_errors as ge
 # from matplotlib import pyplot as plt
 
 # construct the argument parser
@@ -41,7 +44,6 @@ cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-
 docCnts = None
 if len(cnts) > 0:
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
@@ -52,6 +54,13 @@ if len(cnts) > 0:
         if len(approx) == 4:
             docCnts = approx
             break
+try:
+    docArea = cv2.contourArea(docCnts)
+    if docArea <= 300000 or docArea >= 1000000:
+        raise ge.PaperDetectionError(
+            'Error in finding paper contour. Area of docCnts is {}'.format(docArea))
+except ge.PaperDetectionError as e:
+    sys.exit(e.message)
 
 # apply perspective transform to the shape
 paper = four_point_transform(image, docCnts.reshape(4, 2))
@@ -69,15 +78,22 @@ cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
 
 # filter out contours with parents
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+# throw new error
+try:
+    if len(cnts) <= 240:
+        raise ge.PaperContourError(
+            'The contour of paper is not detected properly. May be only one external contour in the paper is detected.')
+except ge.PaperContourError as e:
+    sys.exit(e.message)
 
 # find question contours
 questions = gu.find_questions(cnts, paper)
 
-'''
-We are now sorting from left to right by taking a batch of 16 contours
-that are basically a whole row and then sorting them from increasing order of x
-'''
+# We are now sorting from left to right by taking a batch of 16 contours
+# that are basically a whole row and then sorting them from increasing order of x
+
 questionCnts = gu.find_ques_cnts(questions)
+
 correct = 0
 wrong = 0
 # each question has 4 possible answers, to loop over the
@@ -87,7 +103,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
     old_question_no = gu.convert_ques_no(q, 15, 4)
 
     cnts = questionCnts[i:i+4]
-    bubbled = None
+    bubbled = [-1, -1]
     bubble_count = 0
     for (j, c) in enumerate(cnts):
         mask = np.zeros(thresh.shape, dtype='uint8')
@@ -100,7 +116,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 
         # if total > current bubbled then
         # bubbled = total
-        if bubbled is None or bubbled[0] < total:
+        if bubbled[0] == -1 or bubbled[0] < total:
             bubbled = (total, j)
             if bubbled[0] > bubble_thresh:
                 bubble_count += 1
@@ -110,7 +126,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
             # this means that bubbled is not filled
             # therefore we are updating bubble thresh to adjust to the pic
             bubble_thresh = max(bubble_thresh, total+5)
-        print(old_question_no, bubble_thresh, total)
+        # print(old_question_no, bubble_thresh, total)
     # change the q to old q
     # as q0 -> 0
     # as q1 -> 15
@@ -140,6 +156,7 @@ cv2.putText(paper, "Wrong: {}".format(wrong), (10, 60),
 cv2.putText(paper, "Score: {:.1f}%".format(score), (10, 90),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
+cv2.imshow("Original", image)
 cv2.imshow("Paper", paper)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
