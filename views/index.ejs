@@ -9,8 +9,8 @@
 		<h1><%= title %></h1>
 		<p>Welcome to <%= title %></p>
 
-		<form action="/images" method="POST">
-			<input type="file" name="pic" accept="image/*" /> <input type="submit" />
+		<form action="/images" method="POST" enctype="multipart/form-data">
+			<input type="file" name="avatar" /> <input type="submit" />
 		</form>
 	</body>
 </html>
