@@ -147,9 +147,15 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 4)):
 
 # grab the test taker
 score = (correct*positive_marking + wrong*negative_marking) / max_marks * 100
-print("[INFO] correct: {}".format(correct))
-print("[INFO] wrong: {}".format(wrong))
-print("[INFO] score: {:.2f}%".format(score))
+info = {
+    "correct": correct,
+    "wrong": wrong,
+    "score": score
+}
+print(info)
+# print("[INFO] correct: {}".format(correct))
+# print("[INFO] wrong: {}".format(wrong))
+# print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(paper, "Correct: {}".format(correct), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 cv2.putText(paper, "Wrong: {}".format(wrong), (10, 60),
@@ -166,7 +172,7 @@ cv2.putText(paper, "Score: {:.1f}%".format(score), (10, 90),
 # use this in production
 image_name = args['image'].split('/')[-1]
 output_image = 'uploads/result/'+image_name
-print('Saving Image to', output_image)
+# print('Saving Image to', output_image)
 directory = os.path.dirname(output_image)
 try:
     os.stat(directory)
