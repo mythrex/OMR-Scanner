@@ -7,6 +7,7 @@ import imutils
 import cv2
 import random
 import sys
+import os
 # user defined modules
 import grader_util.grader_util as gu
 import grader_util.grader_errors as ge
@@ -156,7 +157,19 @@ cv2.putText(paper, "Wrong: {}".format(wrong), (10, 60),
 cv2.putText(paper, "Score: {:.1f}%".format(score), (10, 90),
             cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-cv2.imshow("Original", image)
-cv2.imshow("Paper", paper)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# comment it out in production
+# cv2.imshow("Original", image)
+# cv2.imshow("Paper", paper)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+
+# use this in production
+image_name = args['image'].split('/')[-1]
+output_image = 'uploads/result/'+image_name
+print('Saving Image to', output_image)
+directory = os.path.dirname(output_image)
+try:
+    os.stat(directory)
+except:
+    os.mkdir(directory)
+cv2.imwrite(output_image, paper)
