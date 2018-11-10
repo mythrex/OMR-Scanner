@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+	<head>
+		<title><%= title %></title>
+		<link rel="stylesheet" href="/stylesheets/style.css" />
+	</head>
+
+	<body>
+		<h1><%= title %></h1>
+		<p>Welcome to <%= title %></p>
+
+		<form action="/images" method="POST">
+			<input type="file" name="pic" accept="image/*" /> <input type="submit" />
+		</form>
+	</body>
 </html>
