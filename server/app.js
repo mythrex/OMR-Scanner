@@ -3,7 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+// webpack
+var webpack = require('webpack');
+var webpackMiddleware = require('webpack-dev-middleware');
+var webpackConfig = require('../webpack.config.js');
 // controller
 var indexRouter = require('./routes/index');
 var imagesRouter = require('./routes/image');
@@ -23,14 +26,15 @@ app.use(express.static(path.join(__dirname, 'uploads')));
 // define routes
 app.use('/', indexRouter);
 app.use('/images', imagesRouter);
-
+// webpack middleware
+app.use(webpackMiddleware(webpack(webpackConfig)));
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
