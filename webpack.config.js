@@ -1,5 +1,9 @@
 // var HtmlWebpackPlugin = require('html-webpack-plugin');
-var LiveReloadPlugin = require('webpack-livereload-plugin');
+const LiveReloadPlugin = require('webpack-livereload-plugin');
+
+//for live reload
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const devMode = process.env.NODE_ENV !== 'production';
 
 module.exports = {
 	entry: './client/index.js',
@@ -11,30 +15,22 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				use: ['style-loader', 'css-loader'],
-				test: /\.css$/
-			},
-			{
-				test: /\.sass|\.scss$/,
+				test: /\.(sa|sc|c)ss$/,
 				use: [
-					{
-						loader: 'style-loader'
-					},
-					{
-						loader: 'css-loader',
-						options: {
-							sourceMap: true
-						}
-					},
-					{
-						loader: 'sass-loader',
-						options: {
-							sourceMap: true
-						}
-					}
+					devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+					'css-loader',
+					'sass-loader'
 				]
 			}
 		]
 	},
-	plugins: [new LiveReloadPlugin()]
+	plugins: [
+		new LiveReloadPlugin(),
+		new MiniCssExtractPlugin({
+			// Options similar to the same options in webpackOptions.output
+			// both options are optional
+			filename: '[name].css',
+			chunkFilename: '[id].css'
+		})
+	]
 };
