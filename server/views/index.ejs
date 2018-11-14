@@ -12,9 +12,17 @@
 	</head>
 
 	<body>
-		<div id="camera-container"></div>
+		<div id="camera-container">
+			<video id="video">Video stream not available.</video>
+			<canvas id="canvas"> </canvas>
+			<div class="output">
+				<img id="photo" alt="The screen capture will appear in this box." />
+			</div>
+		</div>
 		<div id="shutter-container">
-			<div class="shutter"><a class="shutter-btn" value=""></a></div>
+			<div id="startbutton" class="shutter">
+				<a class="shutter-btn" value=""></a>
+			</div>
 			<a
 				class="waves-effect waves-light modal-trigger"
 				id="browse"
@@ -22,11 +30,6 @@
 			>
 				<i class="material-icons">add_box</i>
 			</a>
-			<!--
-				<form action="/images" method="POST" enctype="multipart/form-data">
-					<input type="file" name="avatar" /> <input type="submit" />
-				</form>
-			-->
 		</div>
 		<div id="browse-file-modal" class="modal">
 			<div class="modal-content">

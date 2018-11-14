@@ -10,6 +10,8 @@ window.$ = jquery;
 const materialize = require('materialize-css');
 const materializeCss = require('../node_modules/materialize-css/dist/css/materialize.min.css');
 
+// capture.js
+const capture = require('./capture');
 document.addEventListener('DOMContentLoaded', function() {
 	var elems = document.querySelectorAll('.modal');
 	// eslint-disable-next-line no-undef
@@ -20,4 +22,5 @@ document.addEventListener('DOMContentLoaded', function() {
 		indicators: true,
 		duration: 0
 	});
+	capture();
 });
