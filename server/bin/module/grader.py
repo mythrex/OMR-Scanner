@@ -171,7 +171,7 @@ cv2.putText(paper, "Score: {:.1f}%".format(score), (10, 90),
 
 # use this in production
 image_name = args['image'].split('/')[-1]
-output_image = 'uploads/result/'+image_name
+output_image = 'server/uploads/result/'+image_name
 # print('Saving Image to', output_image)
 directory = os.path.dirname(output_image)
 try:

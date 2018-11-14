@@ -7,7 +7,7 @@ const { spawn } = require('child_process');
 // for appending extention
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, 'uploads');
+		cb(null, 'server/uploads');
 	},
 	filename: function(req, file, cb) {
 		cb(null, Date.now() + '.' + file.originalname.split('.').pop());
@@ -18,8 +18,9 @@ var upload = multer({ storage: storage });
 /* POST Image listing. */
 router.post('/', upload.single('avatar'), function(req, res, next) {
 	// eslint-disable-next-line no-console
+	console.log(req.file);
 	const analyseOmr = spawn('python', [
-		'bin/module/grader.py',
+		'server/bin/module/grader.py',
 		'-i',
 		req.file.path
 	]);
@@ -31,7 +32,7 @@ router.post('/', upload.single('avatar'), function(req, res, next) {
 	});
 
 	analyseOmr.stderr.on('data', err => {
-		// console.log(`stderr: ${err}`);
+		console.log(`stderr: ${err}`);
 		res.status(404).send(err);
 	});
 
