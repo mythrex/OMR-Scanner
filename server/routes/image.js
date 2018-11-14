@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 var express = require('express');
 var router = express.Router();
@@ -43,6 +44,10 @@ router.post('/', upload.single('avatar'), function(req, res, next) {
 
 router.get('/:image', function(req, res, next) {
 	var image = req.params.image;
-	res.render('result', { original: `/${image}`, result: `/result/${image}` });
+	res.render('result', {
+		original: `/${image}`,
+		result: `/result/${image}`,
+		production: process.env.NODE_ENV === 'production'
+	});
 });
 module.exports = router;

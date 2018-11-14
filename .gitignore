@@ -81,5 +81,4 @@ typings/
 
 # uploaded images
 uploads
-
-# End of https://www.gitignore.io/api/node
+server/uploads
