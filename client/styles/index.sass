@@ -1,0 +1,48 @@
+#camera-container
+    height: 85%
+    width: 100%
+    background: $divider-color
+    display: flex
+
+#shutter-container
+    height: 15%
+    width: 100%
+    background: White
+    display: flex
+    flex-direction: row
+
+    .shutter
+        height: 80px
+        width: 80px
+        background: $primary-color
+        margin: auto
+        display: flex
+        border-radius: 50%
+
+        .shutter-btn
+            height: 60px
+            width: 60px
+            margin: auto
+            border-radius: 50%
+            border: 5px solid white
+
+            &:hover
+                cursor: pointer
+
+    #browse
+        height: 50px
+        width: 50px
+        display: flex
+        margin: auto 5px auto 0
+        cursor: pointer
+
+        .material-icons
+            font-size: 3em
+            display: block
+            color: $primary-color
+            margin: auto
+
+    form
+        margin-top: auto
+        margin-bottom: auto
+        margin-left: auto
