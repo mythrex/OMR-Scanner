@@ -1,0 +1,14 @@
+version: '3'
+services:
+  omr_scanner:
+    image: mythrex/omr_scanner
+    container_name: omr_scanner
+    environment:
+      - DEBUG=TRUE
+    ports:
+      - 3000:3000
+    volumes:
+      - omr_data:/usr/share/app/data
+volumes:
+  omr_data:
+    driver: local
