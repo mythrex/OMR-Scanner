@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"start": "nodemon --exec babel-node ./server/bin/www  --ignore client"
+		"start": "nodemon ./server/bin/www"
 	},
 	"dependencies": {
 		"cookie-parser": "~1.4.3",
