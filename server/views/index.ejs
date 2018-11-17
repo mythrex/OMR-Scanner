@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title><%= title %></title>
+		<% if(production){ %>
+		<link rel="stylesheet" href="/main.css" />
+		<% } %>
+		<link
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+			rel="stylesheet"
+		/>
+	</head>
+
+	<body>
+		<div id="camera-container">
+			<video id="video">Video stream not available.</video>
+			<canvas id="canvas"> </canvas>
+			<div class="output">
+				<img id="photo" alt="The screen capture will appear in this box." />
+			</div>
+		</div>
+		<div id="shutter-container">
+			<div id="startbutton" class="shutter">
+				<a class="shutter-btn" value=""></a>
+			</div>
+			<a
+				class="waves-effect waves-light modal-trigger"
+				id="browse"
+				href="#browse-file-modal"
+			>
+				<i class="material-icons">add_box</i>
+			</a>
+		</div>
+		<div id="browse-file-modal" class="modal">
+			<div class="modal-content">
+				<form action="/images" method="POST" enctype="multipart/form-data">
+					<input type="file" name="avatar" />
+					<input
+						id="file-submit"
+						class="btn grey"
+						type="submit"
+						value="Submit"
+					/>
+				</form>
+			</div>
+		</div>
+		<script src="/bundle.js"></script>
+	</body>
+</html>

@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"start": "nodemon ./bin/www"
+		"start": "nodemon --exec babel-node ./server/bin/www  --ignore client"
 	},
 	"dependencies": {
 		"cookie-parser": "~1.4.3",
@@ -11,10 +11,22 @@
 		"ejs": "~2.5.7",
 		"express": "~4.16.0",
 		"http-errors": "~1.6.2",
+		"jquery": "^3.3.1",
+		"materialize-css": "^1.0.0",
 		"morgan": "~1.9.0",
 		"multer": "^1.4.1"
 	},
 	"devDependencies": {
-		"eslint": "^5.8.0"
+		"babel-preset-react": "^6.24.1",
+		"css-loader": "^1.0.1",
+		"eslint": "^5.8.0",
+		"html-webpack-plugin": "^3.2.0",
+		"mini-css-extract-plugin": "^0.4.4",
+		"node-sass": "^4.10.0",
+		"sass-loader": "^7.1.0",
+		"style-loader": "^0.23.1",
+		"webpack": "^4.25.1",
+		"webpack-dev-middleware": "^3.4.0",
+		"webpack-livereload-plugin": "^2.1.1"
 	}
 }
