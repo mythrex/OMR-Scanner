@@ -7,8 +7,6 @@ services:
       - DEBUG=TRUE
     ports:
       - 3000:3000
+      - 35729:35729
     volumes:
-      - omr_data:/usr/share/app/data
-volumes:
-  omr_data:
-    driver: local
+      - .:/usr/src/app

@@ -23,7 +23,7 @@ COPY package*.json /usr/src/app/
 
 # install npm packages
 RUN npm install
-RUN npm i g nodemon
+RUN npm i nodemon
 
 # copy everything
 COPY . /usr/src/app/
