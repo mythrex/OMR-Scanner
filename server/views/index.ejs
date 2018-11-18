@@ -13,36 +13,32 @@
 
 	<body>
 		<div id="camera-container">
-			<video id="video">Video stream not available.</video>
-			<canvas id="canvas"> </canvas>
-			<div class="output">
-				<img id="photo" alt="The screen capture will appear in this box." />
+			<div id="placeholder-img-container">
+				<h2 class="center">Click a pic of omr sheet!</h2>
+				<img
+					id="placeholder-img"
+					src="/images/placeholder_img.png"
+					alt="Placehodler Image"
+				/>
 			</div>
 		</div>
 		<div id="shutter-container">
-			<div id="startbutton" class="shutter">
-				<a class="shutter-btn" value=""></a>
-			</div>
-			<a
-				class="waves-effect waves-light modal-trigger"
-				id="browse"
-				href="#browse-file-modal"
+			<form
+				id="browse-form"
+				action="/images"
+				method="POST"
+				enctype="multipart/form-data"
 			>
-				<i class="material-icons">add_box</i>
-			</a>
-		</div>
-		<div id="browse-file-modal" class="modal">
-			<div class="modal-content">
-				<form action="/images" method="POST" enctype="multipart/form-data">
-					<input type="file" name="avatar" />
-					<input
-						id="file-submit"
-						class="btn grey"
-						type="submit"
-						value="Submit"
-					/>
-				</form>
-			</div>
+				<div class="upload-btn-wrapper">
+					<div id="startbutton" class="shutter">
+						<a class="shutter-btn" value=""></a>
+					</div>
+					<input id="upload-btn" type="file" name="avatar" />
+				</div>
+				<button id="file-submit" class="material-icons" type="submit">
+					<i class="material-icons">send</i>
+				</button>
+			</form>
 		</div>
 		<script src="/bundle.js"></script>
 	</body>
