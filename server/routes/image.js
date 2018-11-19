@@ -44,8 +44,9 @@ router.post('/', upload.single('avatar'), function(req, res, next) {
 
 router.get('/:image/:e', function(req, res, next) {
 	var image = req.params.image;
-	var e = req.params.e;
-	if (!e) {
+	var e = parseInt(req.params.e);
+	// if no error
+	if (e != 1) {
 		res.render('result', {
 			original: `/${image}`,
 			result: `/result/${image}`,
