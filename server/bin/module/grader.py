@@ -28,6 +28,7 @@ max_marks = 30
 positive_marking = 1
 negative_marking = 0
 bubble_thresh = 185
+
 # load the image
 orig = cv2.imread(args['image'])
 image = orig.copy()

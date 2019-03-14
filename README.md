@@ -5,6 +5,14 @@ Much of help is taken from [this blog by pyimageSearch. Give it a read.](https:/
 
 ## How this works?
 
+### Input
+
+<img src="./tut_images/1542534429457_i.jpg" alt="Input" height="300">
+
+### Output
+
+<img src="./tut_images/1542534429457_o.jpg" alt="Input" height="300">
+
 I will try to explain as effectively as possible.
 
 This has mainly **4 steps**:
